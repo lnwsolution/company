@@ -3,7 +3,7 @@ const session = require('express-session');
 const app = express();
 const http = require("http").Server(app);
 const io = require("socket.io")(http);
-const port = 5000;
+const port = 3000;
 
 app.set('view engine', 'ejs');
 app.set('views', __dirname + '/views');
@@ -30,7 +30,7 @@ app.use("/client", clientRouter);
 const reportRouter = require("./routes/report")(io);
 app.use("/report", reportRouter);
 
-http.listen(port || 3001, '0.0.0.0', () => {
+http.listen(port , () => {
   console.log(`📦 API has been started. 🚀`);
   console.log(`📦 Started at http://localhost:${port} 🌏`);
 });
