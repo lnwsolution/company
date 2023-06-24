@@ -3,7 +3,7 @@ const session = require('express-session');
 const app = express();
 const http = require("http").Server(app);
 const io = require("socket.io")(http);
-const port = 3000;
+const port = 5000;
 
 app.set('view engine', 'ejs');
 app.set('views', __dirname + '/views');
