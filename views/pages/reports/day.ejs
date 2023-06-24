@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>
+    <%= title %>
+  </title>
+  <%- include('../../partials/head'); %>
+</head>
+
+<body class="bg-light">
+  <div class="container">
+    <div class="row">
+      <div class="col-12">
+        <div id="line_chart">
+          <canvas id="line-chart" width="w-100"></canvas>
+        </div>
+      </div>
+      <div class="col-6"></div>
+    </div>
+  </div>
+  <%- include('../../partials/menu'); %>
+    <%- include('../../partials/body'); %>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+      <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+      <script>
+        const dateString = new Date().toDateString();
+        let chartInstance = null;
+        const socket = io();
+
+        socket.on("connect", () => {
+          socket.emit("getData");
+        });
+
+        socket.on("newData", (data) => {
+          const filteredData = filterDataByDate(data, dateString);
+          updateChart(filteredData);
+        });
+
+        function updateChart(data) {
+          const labels = ["00:00", "01:00", "02:00", "03:00", "04:00", "05:00", "06:00", "07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00", "23:00",];
+
+          const datachart = {
+            type: "line",
+            data: {
+              labels: labels,
+              datasets: [
+                {
+                  label: "เดิมพัน",
+                  data: calculateHourlyTotal(data),
+                  fill: false,
+                  backgroundColor: '#2196f399',
+                  borderColor: '#2196f3',
+                },
+                {
+                  label: "ยอดชนะ",
+                  data: calculateHourlyWin(data),
+                  fill: false,
+                  backgroundColor: '#dc4c6499',
+                  borderColor: '#dc4c64',
+                },
+                {
+                  label: "กำไร",
+                  data: calculateHourlyProfit(data),
+                  fill: false,
+                  backgroundColor: '#e4a11b99',
+                  borderColor: '#e4a11b',
+                },
+              ],
+            }
+          };
+
+          var ctx = document.getElementById("line-chart").getContext('2d');
+          chartInstance = new Chart(ctx, datachart);
+        }
+
+        function filterDataByDate(data, date) {
+          return data.filter((item) => {
+            const itemDate = new Date(item.timestamp).toDateString();
+            return itemDate === date;
+          });
+        }
+
+        function calculateHourlyTotal(data) {
+          const hourlyTotal = Array(24).fill(0);
+
+          data.forEach((item) => {
+            const timestamp = new Date(item.timestamp);
+            const hour = timestamp.getHours();
+            hourlyTotal[hour] += item.betAmount;
+          });
+
+          hourlyTotal.forEach((value, index) => {
+            hourlyTotal[index] = parseFloat((value / 100).toFixed(2));
+          });
+
+          return hourlyTotal;
+        }
+
+        function calculateHourlyWin(data) {
+          const hourlyWin = Array(24).fill(0);
+
+          data.forEach((item) => {
+            const timestamp = new Date(item.timestamp);
+            const hour = timestamp.getHours();
+            hourlyWin[hour] += item.winAmount;
+          });
+
+          hourlyWin.forEach((value, index) => {
+            hourlyWin[index] = parseFloat((value / 100).toFixed(2));
+          });
+
+          return hourlyWin;
+        }
+
+        function calculateHourlyProfit(data) {
+          const hourlyProfit = Array(24).fill(0);
+
+          data.forEach((item) => {
+            const timestamp = new Date(item.timestamp);
+            const hour = timestamp.getHours();
+            const profit = item.betAmount - item.winAmount;
+            hourlyProfit[hour] += profit;
+          });
+
+          hourlyProfit.forEach((value, index) => {
+            hourlyProfit[index] = parseFloat((value / 100).toFixed(2));
+          });
+
+          return hourlyProfit;
+        }
+      </script>
+</body>
+
+</html>
