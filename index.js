@@ -4,7 +4,6 @@ const app = express();
 const http = require("http").Server(app);
 const io = require("socket.io")(http);
 const port = 5000;
-const host = '0.0.0.0';
 
 app.set('view engine', 'ejs');
 app.set('views', __dirname + '/views');
@@ -31,7 +30,7 @@ app.use("/client", clientRouter);
 const reportRouter = require("./routes/report")(io);
 app.use("/report", reportRouter);
 
-http.listen(port, host, () => {
+http.listen(port || 3001, '0.0.0.0', () => {
   console.log(`📦 API has been started. 🚀`);
   console.log(`📦 Started at http://localhost:${port} 🌏`);
 });
